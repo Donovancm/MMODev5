@@ -5,6 +5,18 @@
  */
 package View;
 
+import Model.Users;
+import java.awt.CardLayout;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import static mmodev5.Main.persist;
+
 /**
  *
  * @author Donovan
@@ -14,8 +26,25 @@ public class RegisterScreen extends javax.swing.JFrame {
     /**
      * Creates new form RegisterScreen
      */
+    Connection connection = null;
+    Statement statement = null;
+    String username;
+    String password;
+    String logInUsername;
+    String logInPassword;
+    String query;
+    String currentLogUser;
+    
     public RegisterScreen() {
         initComponents();
+        try {
+            connection = DriverManager.getConnection("jdbc:postgresql://localhost/postgres",
+            "postgres", "donovan");
+            
+        } catch ( Exception e ) {
+         System.err.println( e.getClass().getName()+": "+ e.getMessage() );
+         System.exit(0);
+        }
     }
 
     /**
@@ -132,10 +161,11 @@ public class RegisterScreen extends javax.swing.JFrame {
 
     private void button1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button1ActionPerformed
         // TODO add your handling code here:
-        this.setVisible(false);
-        MainScreen mainscreen = new MainScreen();
-        mainscreen.setVisible(true);
-        mainscreen.setLocationRelativeTo(null);
+        //this.setVisible(false);
+//        MainScreen mainscreen = new MainScreen();
+//        mainscreen.setVisible(true);
+//        mainscreen.setLocationRelativeTo(null);
+        getRegistration();
     }//GEN-LAST:event_button1ActionPerformed
 
     private void button2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button2ActionPerformed
@@ -179,6 +209,46 @@ public class RegisterScreen extends javax.swing.JFrame {
                 new RegisterScreen().setVisible(true);
             }
         });
+    }
+    public void getRegistration()
+    {
+        
+        String reg_firstName= jTextField1.getText();      
+        String reg_lastName = jTextField2.getText();
+        String reg_iban     = jTextField3.getText();
+        String reg_username = jTextField4.getText();
+        String reg_password = jTextField5.getText();
+        try {
+            statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery( "SELECT * FROM Users WHERE user_name = '" + reg_username + "';" );
+            while ( rs.next() ) {
+                username = rs.getString("user_name");
+                password = rs.getString("password");
+            
+            }
+        } catch (SQLException ex) {
+            //Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        if(reg_username.equals(username)){
+            //JOptionPane.showMessageDialog(panelOne, "Username already in use.");
+            System.out.println("User already taken");
+            //jTextField6.setText("");
+        } else{
+            Users u = new Users();
+            System.out.println(reg_username);
+            
+            u.setFirstName(reg_firstName);
+            u.setLastName(reg_lastName);
+            u.setIban(reg_iban);
+            u.setUserName(reg_username);
+            u.setPassword(reg_password);
+            u.setCharacterSlots(5);
+            persist(u);
+            ManagementScreen managementscreen = new ManagementScreen();
+            managementscreen.setVisible(true);
+            managementscreen.setLocationRelativeTo(null);
+            //emtpyFields();
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

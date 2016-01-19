@@ -5,6 +5,16 @@
  */
 package View;
 
+import java.awt.CardLayout;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author Donovan
@@ -13,9 +23,26 @@ public class MainScreen extends javax.swing.JFrame {
 
     /**
      * Creates new form MainScreen
-     */
+     */    
+    Connection connection = null;
+    Statement statement = null;
+    String username;
+    String password;
+    String logInUsername;
+    String logInPassword;
+    String query;
+    String currentLogUser;
+    
     public MainScreen() {
         initComponents();
+        try {
+            connection = DriverManager.getConnection("jdbc:postgresql://localhost/postgres",
+            "postgres", "donovan");
+            
+        } catch ( Exception e ) {
+         System.err.println( e.getClass().getName()+": "+ e.getMessage() );
+         System.exit(0);
+        }
     }
 
     /**
@@ -34,7 +61,7 @@ public class MainScreen extends javax.swing.JFrame {
         label3 = new java.awt.Label();
         label4 = new java.awt.Label();
         jTextField1 = new javax.swing.JTextField();
-        jPasswordField1 = new javax.swing.JPasswordField();
+        jTextField2 = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -62,7 +89,7 @@ public class MainScreen extends javax.swing.JFrame {
 
         jTextField1.setText("Enter user name");
 
-        jPasswordField1.setText("jPasswordField1");
+        jTextField2.setText("jTextField2");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -78,7 +105,7 @@ public class MainScreen extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(label2, javax.swing.GroupLayout.PREFERRED_SIZE, 290, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(jPasswordField1, javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jTextField2, javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(jTextField1, javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
                             .addComponent(button2, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -98,7 +125,7 @@ public class MainScreen extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(label4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPasswordField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 146, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(button1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -111,10 +138,10 @@ public class MainScreen extends javax.swing.JFrame {
 
     private void button1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button1ActionPerformed
         // TODO add your handling code here:
-        this.setVisible(false);
-        ManagementScreen managementscreen = new ManagementScreen();
-        managementscreen.setVisible(true);
-        managementscreen.setLocationRelativeTo(null);
+        logininfo();
+        //ManagementScreen managementscreen = new ManagementScreen();
+        //managementscreen.setVisible(true);
+        //managementscreen.setLocationRelativeTo(null);
     }//GEN-LAST:event_button1ActionPerformed
 
     private void button3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button3ActionPerformed
@@ -159,13 +186,38 @@ public class MainScreen extends javax.swing.JFrame {
             }
         });
     }
+    public void logininfo(){
+        logInUsername = jTextField1.getText();
+        logInPassword = jTextField2.getText();
+        currentLogUser = jTextField1.getText();
+        
+        try {
+            statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery("SELECT * FROM users WHERE user_name = '" + 
+                    logInUsername + "' AND password = '" + logInPassword + "'");
+            if(rs.next()){
+                this.setVisible(false);
+                ManagementScreen managementscreen = new ManagementScreen();
+                managementscreen.setVisible(true);
+                managementscreen.setLocationRelativeTo(null);
+
+            
+            }else{
+                
+                //JOptionPane.showMessageDialog(MainScreen,"Wrong input, enter the correct info again");
+                System.out.println("User not found in Game");
+            }
+        } catch (SQLException ex) {
+            //Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private java.awt.Button button1;
     private java.awt.Button button2;
     private java.awt.Button button3;
-    private javax.swing.JPasswordField jPasswordField1;
     private javax.swing.JTextField jTextField1;
+    private javax.swing.JTextField jTextField2;
     private java.awt.Label label2;
     private java.awt.Label label3;
     private java.awt.Label label4;
